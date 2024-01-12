@@ -1,111 +1,87 @@
 import Canvas from "./Canvas";
-import img from "../assets/Red/Bodies/body_halftrack.png"
-import { addGameObject } from "./Game";
-import { calcFrame } from "./animation/animation"; 
+import Weapon from "/src/js/Weapon";
+import drawRotate from "/src/js/Helpers/DrawRotate";
+import TankAnimation from "../Animations/TankAnimation";
+import { DELTATIME } from "./Game";
 
 const ctx = Canvas().ctx;
 
-const tank = {
-    "idle": [
-        {
-            x: 30,
-            y: 12,
-            width: 68,
-            height: 93
-        },    
-    ],
-    "move": [
-        {
-            x: 30,
-            y: 12,
-            width: 68,
-            height: 93
-        },
-        {
-            x: 158,
-            y: 12,
-            width: 68,
-            height: 93
-        }
-    ]
+const colors = {
+    "Blue": 0,
+    "Camo": 1,
+    "Desert": 2,
+    "Purple": 3,
+    "Red": 4,
 }
-
-function drawRotate(x, y, angle, drawFunction){
-    angle = angle * Math.PI/180
-
-    ctx.save();
-    ctx.rotate(angle);
-
-    let r = Math.sqrt(x*x + y*y); //r^2 = (delta X)^2 + (delta Y)^2
-    let alpha = Math.asin(y/r)
-    x = r * Math.cos(alpha - angle)
-    y = r * Math.sin(alpha- angle)
-
-    drawFunction(x,y)
-    ctx.restore()
-}
+Object.freeze(colors);
 
 class Tank{
-    constructor(){
+    constructor(color){
         this.x = 300;
         this.y = 300;
+        this.speed = 300;
 
-        this.image = new Image();
-        this.image.src = img;
-
-        this.proportion = 0.1;
-        let canvas = Canvas();
-        this.width = canvas.witdh * this.proportion;
+        this.proportion = 0.2;
+        this.width = Canvas().witdh * this.proportion;
         this.height = this.width * (4/3);
-        // this.height = canvas.height * this.proportion;
 
-        this.animationState = "move";
-        this.getFrame();
+        this.animation = new TankAnimation(this.width, this.height, color)
+        // this.height = canvas.height * this.proportion;
 
         this.angle = 0;
 
-        window.addEventListener("keydown", e=>{
-            // console.log(e)
-            if(e.key == "ArrowUp") this.moveUp();
-            if(e.key == "ArrowDown") this.moveDown();
-            if(e.key == "ArrowLeft") this.moveLeft();
-            if(e.key == "ArrowRight") this.moveRight();
-        })
+        this.updateWeapon();
+        this.weapon = new Weapon(this.weaponData.x, this.weaponData.y, this.weaponData.proportion, this.angle, color);
     }
 
     update(){
-        this.getFrame();
+        this.animationState = "move";
+
+        // this.animationState = "idle";
+
+        this.updateWeapon();
+        this.weapon.update(this.weaponData.x, this.weaponData.y, this.angle);
     }
 
     draw(){
-        let posx = ((this.x + this.width) + this.x)/2
-        let posy = ((this.y + this.height) + this.y)/2
-        drawRotate(posx, this.y, this.angle, (x,y)=>{
-            ctx.drawImage(this.image, this.imgX, this.imgY, this.imgWidth, this.imgHeight, x, y, this.width, this.height);
-            // ctx.strokeRect(this.x, this.y, this.width, this.height);
+        drawRotate(this.x, this.y, this.width, this.height, this.angle, (x,y)=>{
+            ctx.drawImage(this.animation.canvas, x, y, this.width, this.height);
+            // ctx.strokeRect(x, y, this.width, this.height);
         });
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
-        // ctx.save();
-        // ctx.rotate(this.angle * Math.PI /180);
-
-        // ctx.drawImage(this.image, this.imgX, this.imgY, this.imgWidth, this.imgHeight, this.x, this.y, this.width, this.height);
-        // ctx.strokeRect(this.x, this.y, this.width, this.height);  
-        // ctx.restore()
+        this.weapon.draw()
     }
 
-    getFrame(){
-        let framePos = calcFrame(tank, this.animationState);
-        this.imgX = framePos.x;
-        this.imgY = framePos.y;
-        this.imgWidth = framePos.width;
-        this.imgHeight = framePos.height;
+    updateWeapon(){
+        let x = this.x + (this.width/6)
+        let y = this.y - (this.height/5)
+        // let r = Math.sqrt(Math.pow(x - this.x,2) + Math.pow(y - this.y,2))
+        
+        // x = r * Math.cos(this.angle * Math.PI / 180) + x
+        // y = r * Math.sin(this.angle * Math.PI / 180) + y
+
+        this.weaponData = {
+            x: x,
+            y: y,
+            angle: this.angle,
+            proportion: this.proportion/1.5
+        }
     }
 
-    moveUp(){
-        this.x += 5
+    movefodward(){
+        let speed = this.speed * (DELTATIME);
+        let angle = (this.angle - 90) * Math.PI /180;
+        let posx = speed * Math.cos(angle);
+        let posy = speed * Math.sin(angle);
+        this.x += posx;
+        this.y += posy;
     }
-    moveDown(){
-        this.x -= 5
+    moveBackward(){
+        let speed = this.speed * DELTATIME;
+        let angle = (this.angle + 180 - 90) * Math.PI /180;
+        let posx = speed * Math.cos(angle);
+        let posy = speed * Math.sin(angle);
+        this.x += posx;
+        this.y += posy;
     }
     moveLeft(){
         this.angle -= 5
@@ -115,8 +91,5 @@ class Tank{
     }
 }
 
-const player1 = new Tank()
-
-export default ()=>{
-    addGameObject(player1)
-}
+export default Tank
+export {colors}

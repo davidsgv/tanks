@@ -1,6 +1,5 @@
-import { addGameObject } from "./Game";
-import Canvas from "./Canvas";
-import img from "../assets/Terrains/terrain.png"
+import Canvas from "/src/js/Canvas";
+import img from "/src/assets/Terrains/terrain.png"
 
 const ctx = Canvas().ctx;
 
@@ -31,11 +30,8 @@ class BackgroundImage{
     }
 
     draw(){
-        // ctx.drawImage(this.image, this.x, this.y, 200, 200);
         ctx.drawImage(this.image, this.srcX, this.srcY, this.srcWidth, this.srcHeight, 
             this.width * this.gridPosX, this.height * this.gridPosY, this.width, this.height);
-        // ctx.drawImage(this.image, 0, 0, this.width, this.height, this.x, this.y, this.width, CANVAS_HEIGHT)
-        // ctx.drawImage(this.image, 0, 0, this.width, this.height, this.x + this.width, this.y, this.width, CANVAS_HEIGHT)
     }
 }
 
@@ -98,12 +94,11 @@ const mapGrid = [
     ]
 ];
 
+const gameObjects = []
+mapGrid.forEach((row, rowIndex)=>{
+    return row.map((column, columnIndex)=>{
+        gameObjects.push(new BackgroundImage(img, column.x, column.y, column.width, column.height, columnIndex, rowIndex))
+    });
+})
 
-export default ()=>{
-    mapGrid.forEach((row, rowIndex)=>{
-        row.forEach((column, columnIndex)=>{
-            let tile = new BackgroundImage(img, column.x, column.y, column.width, column.height, columnIndex, rowIndex)
-            addGameObject(tile);
-        });
-    })
-}
+export default gameObjects

@@ -1,11 +1,19 @@
-import Canvas from "./Canvas";
+import Canvas from "/src/js/Canvas"
+import { gameConfig } from "../Config/Config";
 
-const fps = 60;
 const gameObjects = []
-let gameFrame = 0;
-let staggerFrames = 5
+let FPS = 60;
+let GAMEFRAME = 0;
+let DELTATIME = 0;
+let LASTSTAMP = 0;
 
-function animate() {
+
+function animate(time) {
+    GAMEFRAME++;
+    DELTATIME = (time - LASTSTAMP)/1000;
+    FPS =  1/DELTATIME;
+    LASTSTAMP = time;
+
     const canvas = Canvas()
     const ctx = canvas.ctx
     ctx.clearRect(0,0, canvas.witdh, canvas.height)
@@ -15,22 +23,23 @@ function animate() {
         element.draw();
     });
 
-    gameFrame++
-    if(gameFrame % 60 == 0){
-        gameFrame=0
+    if(gameConfig.showFPS){
+        ctx.font = "18px serif";
+        ctx.strokeStyle = "black";
+        ctx.strokeText(`${FPS.toFixed()} FPS`, 0, 18)
     }
 
-    setTimeout(() => {
-        requestAnimationFrame(animate);
-    }, 1000 / fps);
+    requestAnimationFrame(animate);
 }
 
 const addGameObject = (object)=>{
     gameObjects.push(object)
 }
 
-export {addGameObject, gameFrame, staggerFrames}
+export {addGameObject, GAMEFRAME}
 
 export default ()=>{
-    animate();
+    requestAnimationFrame(animate);
 }
+
+export {DELTATIME}

@@ -1,8 +1,6 @@
-import "./css/style.css"
-import Game from "./js/Game";
-import Background from "./js/Background";
-import Tank from "./js/Tank"
+import "/src/css/style.css"
+import Test from "/src/Scenes/TestScene";
+import gamepad from "./lib/Gamepad/gamepad";
 
-Game();
-Background();
-Tank();
+gamepad()
+Test()
